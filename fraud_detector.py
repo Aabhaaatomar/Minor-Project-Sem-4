@@ -79,7 +79,7 @@ def _normalize_location(location):
     return "Community"
 
 
-# ─── Rule-Based Engine ────────────────────────────────────────────────────────
+# ─── Rule-Based Engine ───────────────────────────────────────────────────────
 
 def run_rule_engine(transaction, recent_transactions, blocklist_values):
     """
