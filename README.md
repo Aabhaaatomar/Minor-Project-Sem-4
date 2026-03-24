@@ -57,11 +57,14 @@ Developed as part of a university academic project to explore machine learning a
 ## 📊 Dashboard Preview
 
 ### 🖥️ Full Dashboard
-![Dashboard](./images/dashboard.png)
+
+![Preview 1](dashboard.png)
 
 ### 📈 Fraud Distribution
-![Chart](./images/fraud_chart.png)
+
+![Preview 2](fraud_chart.png)
 
 ### 📋 Recent Transactions
-![Transactions](./images/transactions.png)
+
+![Preview 3](transaction.png)
 
