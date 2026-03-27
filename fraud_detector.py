@@ -79,3 +79,12 @@ def _normalize_location(location):
         return "University"
     return "Community"
 
+# ─── Rule-Based Engine ────────────────────────────────────────────────────────
+
+def run_rule_engine(transaction, recent_transactions, blocklist_values):
+    """
+    8 rules derived from dataset analysis.
+    Returns: (triggered_rules: list[str], rule_score: float 0-1)
+    """
+    triggered = []
+
