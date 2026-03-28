@@ -88,3 +88,24 @@ def run_rule_engine(transaction, recent_transactions, blocklist_values):
     """
     triggered = []
 
+# Rule 1: High amount (all Normal transactions are <= 4990)
+    if transaction.amount > AMOUNT_THRESHOLD:
+        triggered.append("HIGH_AMOUNT")
+
+    # Rule 2: Odd hour (hours 0-4 are 100% Suspicious in dataset)
+    if transaction.created_at.hour <= ODD_HOUR_MAX:
+        triggered.append("ODD_HOUR_TRANSACTION")
+
+    # Rule 3: High velocity (>= 10 txns/hr mirrors dataset feature)
+    txn_count_1hr = len([
+        t for t in recent_transactions
+        if t.created_at >= datetime.utcnow() - timedelta(hours=1)
+        and t.id != transaction.id
+    ])
+    if txn_count_1hr >= VELOCITY_LIMIT:
+        triggered.append("HIGH_VELOCITY")
+
+    # Rule 4: Compound risk — high amount AND high velocity
+    if "HIGH_AMOUNT" in triggered and "HIGH_VELOCITY" in triggered:
+        triggered.append("HIGH_AMOUNT_AND_VELOCITY")
+
