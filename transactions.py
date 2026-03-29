@@ -91,3 +91,32 @@ def submit_transaction():
         "fraud_analysis": result,
     }), 201
 
+
+# ─────────────────────────────────────────────
+# GET /api/transactions/  — list user's transactions
+# ─────────────────────────────────────────────
+@transactions_bp.route("/", methods=["GET"])
+@jwt_required()
+def list_transactions():
+    user_id = int(get_jwt_identity())
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+    status_filter = request.args.get("status")
+    fraud_only = request.args.get("fraud_only", "false").lower() == "true"
+
+    query = Transaction.query.filter_by(user_id=user_id)
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    if fraud_only:
+        query = query.filter_by(is_fraud=True)
+
+    paginated = query.order_by(Transaction.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return jsonify({
+        "transactions": [t.to_dict() for t in paginated.items],
+        "total": paginated.total,
+        "page": paginated.page,
+        "pages": paginated.pages,
+    }), 200
