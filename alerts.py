@@ -7,7 +7,7 @@ from flask_socketio import join_room
 alerts_bp = Blueprint("alerts", __name__)
 
 
-# ─────────────────────────────────────────────
+# ────────────────────────────────────────────
 # GET /api/alerts/  — get user's alerts
 # ─────────────────────────────────────────────
 @alerts_bp.route("/", methods=["GET"])
@@ -33,4 +33,63 @@ def get_alerts():
     }), 200
 
 
+# ─────────────────────────────────────────────
+# PUT /api/alerts/<id>/read
+# ─────────────────────────────────────────────
+@alerts_bp.route("/<int:alert_id>/read", methods=["PUT"])
+@jwt_required()
+def mark_read(alert_id):
+    user_id = int(get_jwt_identity())
+    alert = Alert.query.get(alert_id)
 
+    if not alert:
+        return jsonify({"error": "Alert not found"}), 404
+    if alert.user_id != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    alert.is_read = True
+    db.session.commit()
+    return jsonify({"message": "Alert marked as read"}), 200
+
+
+# ─────────────────────────────────────────────
+# PUT /api/alerts/mark-all-read
+# ─────────────────────────────────────────────
+@alerts_bp.route("/mark-all-read", methods=["PUT"])
+@jwt_required()
+def mark_all_read():
+    user_id = int(get_jwt_identity())
+    Alert.query.filter_by(user_id=user_id, is_read=False).update({"is_read": True})
+    db.session.commit()
+    return jsonify({"message": "All alerts marked as read"}), 200
+
+
+# ─────────────────────────────────────────────
+# DELETE /api/alerts/<id>
+# ─────────────────────────────────────────────
+@alerts_bp.route("/<int:alert_id>", methods=["DELETE"])
+@jwt_required()
+def delete_alert(alert_id):
+    user_id = int(get_jwt_identity())
+    alert = Alert.query.get(alert_id)
+
+    if not alert:
+        return jsonify({"error": "Alert not found"}), 404
+    if alert.user_id != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    db.session.delete(alert)
+    db.session.commit()
+    return jsonify({"message": "Alert deleted"}), 200
+
+
+# ─────────────────────────────────────────────
+# Socket.IO — client joins their personal room
+# ─────────────────────────────────────────────
+@socketio.on("join")
+def handle_join(data):
+    """Client sends: { user_id: 5 }"""
+    user_id = data.get("user_id")
+    if user_id:
+        join_room(f"user_{user_id}")
+        socketio.emit("joined", {"room": f"user_{user_id}"})

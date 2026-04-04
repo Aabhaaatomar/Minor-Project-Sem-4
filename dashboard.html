@@ -4,115 +4,24 @@
 <head>
     <title>UniPay FraudX Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
-<script>
-    window.onload = function () {
-
-        const amounts = {{ amounts | tojson
-    }};
-    const txnCounts = {{ txn_counts | tojson }};
-    const labels = {{ labels | tojson }};
-
-    const dataPoints = amounts.map((amt, i) => ({
-        x: amt,
-        y: txnCounts[i]
-    }));
-
-    const colors = labels.map(l =>
-        l === "Suspicious" ? "red" : "green"
-    );
-
-    const ctx = document.getElementById('scatterChart').getContext('2d');
-
-    new Chart(ctx, {
-        type: 'scatter',
-        data: {
-            datasets: [{
-                label: 'Transactions',
-                data: dataPoints,
-                backgroundColor: colors
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Amount'
-                    }
-                },
-                y: {
-                    title: {
-                        display: true,
-                        text: 'Txn Count'
-                    }
-                }
-            }
-        }
-    });
-
-};
-</script>
 
 <body>
 
-    <h1>💳 UniPay FraudX Dashboard</h1>
-    <p>Fraud Detection & Transaction Monitoring System</p>
+    <h1>📊 UniPay FraudX Dashboard</h1>
+    <p>Transaction Monitoring & Fraud Awareness System</p>
 
-    <!-- NAV -->
     <div class="nav">
         <a href="/">🏠 Home</a>
         <a href="/dashboard">📊 Dashboard</a>
     </div>
 
-    <!-- CARDS -->
-    <div class="cards">
-        <div class="card">
-            <h3>Total Transactions</h3>
-            <p>{{ total_txn }}</p>
-        </div>
-
-        <div class="card suspicious-card">
-            <h3>Suspicious</h3>
-            <p>{{ suspicious_txn }}</p>
-        </div>
-
-        <div class="card normal-card">
-            <h3>Normal</h3>
-            <p>{{ normal_txn }}</p>
-        </div>
-    </div>
-
-    <!-- CHARTS -->
-    <div class="charts">
-
-        <div class="chart-box">
-            <h3>Fraud Distribution</h3>
-            <canvas id="pieChart"></canvas>
-        </div>
-
-        <div class="chart-box">
-            <h3>Transactions by Hour</h3>
-            <canvas id="barChart"></canvas>
-        </div>
-
-        <div class="chart-box">
-            <h3>Transaction Scatter Plot</h3>
-            <canvas id="scatterChart"></canvas>
-        </div>
-
-    </div>
-
-    <!-- TABLE -->
-    <h2>Recent Transactions</h2>
+    <h2>Recent Transactions (Dataset View)</h2>
 
     <table>
         <tr>
             <th>ID</th>
-            <th>Amount</th>
+            <th>Amount (₹)</th>
             <th>Hour</th>
             <th>Txn Count</th>
             <th>Status</th>
@@ -134,30 +43,6 @@
         {% endfor %}
     </table>
 
-    <!-- ADD THIS IN HEAD OR BEFORE SCRIPT -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
 
-    <script>
-        // Pie Chart
-        new Chart(document.getElementById("pieChart"), {
-            type: "pie",
-            data: {
-                labels: ["Suspicious", "Normal"],
-                datasets: [{
-                    data: {{ [suspicious_txn, normal_txn] | tojson }}
-        }]
-        }
-    });
-
-        // Bar Chart
-        new Chart(document.getElementById("barChart"), {
-            type: "bar",
-            data: {
-                labels: {{ hours | tojson }},
-            datasets: [{
-                label: "Transactions",
-                data: {{ counts | tojson }}
-            }]
-        }
-    });
-    </script>
+</html>
