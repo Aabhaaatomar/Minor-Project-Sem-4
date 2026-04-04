@@ -24,20 +24,24 @@ Existing fraud detection systems are complex, expensive, and designed for financ
 
 ---
 
+- **Dataset:** AI-generated simulated transaction dataset designed to mimic real-world digital payment patterns for fraud detection
+
+---
+
 ## Technology Stack
 - **Backend:** Python (Flask)
 - **Machine Learning:** Logistic Regression (Scikit-learn)
 - **Data Processing:** Pandas, NumPy
 - **Frontend:** HTML, CSS, JavaScript
 - **Visualization:** Chart.js
-- **Deployment:** Streamlit (Interactive Web App Deployed locally)
+- **Deployment:** Streamlit (Interactive Web App)
 - 
 
 ---
 
 ## Features
 - Simulated transaction dataset (privacy-safe)
-- Dashboard displaying transaction details
+- Dashboard displaying fraud distribution charts
 - Classification of transactions (Normal / Suspicious)
 - Visual analytics (charts & summary cards)
 - Clean and user-friendly interface
