@@ -7,95 +7,234 @@ import plotly.express as px
 st.set_page_config(page_title="UniPay FraudX", layout="wide")
 
 # 🔥 NAVBAR STYLE
-st.markdown("""
-<style>
-.navbar {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    background: white;
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
-}
-.nav-item {
-    font-size: 18px;
-    font-weight: 500;
-    cursor: pointer;
-}
-</style>
-""", unsafe_allow_html=True)
+# 🎨 THEME TOGGLE
+theme = st.radio("Theme", ["Dark", "Light"], horizontal=True)
 
-# 👉 NAVIGATION OPTIONS
+# 🎨 DYNAMIC CSS
+if theme == "Dark":
+    st.markdown("""
+    <style>
+
+    /* Background */
+    [data-testid="stAppViewContainer"] {
+        background-color: #0e1117;
+    }
+
+    /* Text */
+    h1, h2, h3, h4, h5, h6, p, label, div {
+        color: white !important;
+    }
+
+    /* Navbar */
+    div[data-testid="stRadio"] > div {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* Button */
+    .stButton > button {
+        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        transition: 0.3s;
+        font-weight: 600;
+    }
+
+    .stButton > button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+else:
+    st.markdown("""
+    <style>
+
+    /* Background */
+    [data-testid="stAppViewContainer"] {
+        background-color: #ffffff;
+    }
+
+    /* Text */
+    h1, h2, h3, h4, h5, h6, p, label, div {
+        color: black !important;
+    }
+
+    /* Navbar */
+    div[data-testid="stRadio"] > div {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* Button */
+    .stButton > button {
+        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        transition: 0.3s;
+        font-weight: 600;
+    }
+
+    .stButton > button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+# 👉 NAVIGATION
 page = st.radio(
     "",
     ["Home", "Analysis", "Dashboard", "Prediction", "About"],
     horizontal=True
 )
 
+
 # ------------------ LOAD DATA ------------------
 df = pd.read_excel("data.xlsx")
 model = pickle.load(open("fraud_model.pkl", "rb"))
 
 # ------------------ CUSTOM CSS ------------------
-st.markdown("""
-<style>
+# 🎨 THEME TOGGLE
+theme = st.radio("Theme", ["Dark", "Light"], horizontal=True)
 
-/* -------- REMOVE SIDEBAR -------- */
-section[data-testid="stSidebar"] {
-    display: none;
-}
+# 🎨 DYNAMIC CSS
+if theme == "Dark":
+    st.markdown("""
+    <style>
 
-/* -------- FULL APP DARK BACKGROUND -------- */
-[data-testid="stAppViewContainer"] {
-    background-color: #0e1117;
-}
+    /* REMOVE SIDEBAR */
+    section[data-testid="stSidebar"] {
+        display: none;
+    }
 
-/* Remove top white header */
-[data-testid="stHeader"] {
-    background: transparent;
-}
+    /* BACKGROUND */
+    [data-testid="stAppViewContainer"] {
+        background-color: #0e1117;
+    }
 
-/* -------- TEXT STYLING -------- */
-h1, h2, h3, h4, h5, h6 {
-    color: #ffffff !important;
-    text-align: center;
-}
+    /* HEADER */
+    [data-testid="stHeader"] {
+        background: transparent;
+    }
 
-p, label, div {
-    color: #e4e6eb !important;
-}
+    /* TEXT */
+    h1, h2, h3, h4, h5, h6 {
+        color: white !important;
+        text-align: center;
+    }
 
-/* -------- CENTER TOP NAV (RADIO BUTTONS) -------- */
-div[data-testid="stRadio"] > div {
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-}
+    p, label, div {
+        color: #e4e6eb !important;
+    }
 
-/* -------- DATAFRAME -------- */
-[data-testid="stDataFrame"] {
-    background-color: #1c1f26;
-    border-radius: 12px;
-    padding: 10px;
-}
+    /* NAVBAR */
+    div[data-testid="stRadio"] > div {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
 
-/* -------- BUTTON -------- */
+    /* DATAFRAME */
+    [data-testid="stDataFrame"] {
+        background-color: #1c1f26;
+        border-radius: 12px;
+        padding: 10px;
+    }
 
-.stButton > button:hover {
-    transform:scale(1.05);
-    background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
-    box-shadow: 0 4px 15px rgba(255,107,107,0.4);
-}
-/* -------- FULL WIDTH CONTENT -------- */
-.block-container {
-    padding-left: 2rem;
-    padding-right: 2rem;
-}
+    /* BUTTON */
+    .stButton > button {
+        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        transition: 0.3s;
+        font-weight: 600;
+    }
 
-</style>
-""", unsafe_allow_html=True)
+    .stButton > button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+    }
+
+    /* FULL WIDTH */
+    .block-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
+
+else:
+    st.markdown("""
+    <style>
+
+    section[data-testid="stSidebar"] {
+        display: none;
+    }
+
+    [data-testid="stAppViewContainer"] {
+        background-color: #ffffff;
+    }
+
+    [data-testid="stHeader"] {
+        background: transparent;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: black !important;
+        text-align: center;
+    }
+
+    p, label, div {
+        color: #222 !important;
+    }
+
+    div[data-testid="stRadio"] > div {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    [data-testid="stDataFrame"] {
+        background-color: #f5f5f5;
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .stButton > button {
+        background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+        color: white;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        transition: 0.3s;
+        font-weight: 600;
+    }
+
+    .stButton > button:hover {
+        transform: scale(1.05);
+        background: linear-gradient(90deg, #ff6b6b, #ff4b8b);
+    }
+
+    .block-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+
+    </style>
+    """, unsafe_allow_html=True)
 
 # ================== HOME ==================
 if page == "Home":
