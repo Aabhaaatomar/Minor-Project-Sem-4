@@ -6,8 +6,20 @@ import plotly.express as px
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide")
 
-# 🔥 NAVBAR STYLE
-theme = st.radio("Theme", ["Dark", "Light"], horizontal=True,key="theme_toggle")
+#  👉 NAVIGATION
+
+nav_col1, nav_col2 = st.columns([6,2])
+
+with nav_col1:
+    page = st.radio("", ["Home", "Analysis", "Dashboard", "Prediction", "About"], horizontal=True)
+
+with nav_col2:
+    theme = st.radio("", ["🌙", "☀️"], horizontal=True)
+
+if theme == "🌙":
+    theme = "Dark"
+else:   
+    theme = "Light"
 # 🎨 DYNAMIC CSS
 if theme == "Dark":
     st.markdown("""
@@ -89,20 +101,6 @@ else:
     </style>
     """, unsafe_allow_html=True)
 
-# 👉 NAVIGATION
-
-nav_col1, nav_col2 = st.columns([6,2])
-
-with nav_col1:
-    page = st.radio("", ["Home", "Analysis", "Dashboard", "Prediction", "About"], horizontal=True)
-
-with nav_col2:
-    theme = st.radio("", ["🌙", "☀️"], horizontal=True)
-
-if theme == "🌙":
-    theme = "Dark"
-else:   
-    theme = "Light"
 
 # ------------------ LOAD DATA ------------------
 df = pd.read_excel("data.xlsx")
