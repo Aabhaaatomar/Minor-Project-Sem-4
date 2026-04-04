@@ -1,7 +1,8 @@
-streamlit
 pandas
 numpy
-scikit-learn==1.3.0
+matplotlib
 plotly
+flask
+streamlit
 openpyxl
-joblib
+scikit-learn==1.3.0
