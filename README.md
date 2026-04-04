@@ -30,6 +30,7 @@ Existing fraud detection systems are complex, expensive, and designed for financ
 - **Data Processing:** Pandas, NumPy
 - **Frontend:** HTML, CSS, JavaScript
 - **Visualization:** Chart.js
+- **Deployment:** Streamlit (Interactive Web App Deployed locally)
 - 
 
 ---
@@ -60,13 +61,16 @@ Developed as part of a university academic project to explore machine learning a
 
 ![Preview 1](Landing_page.png)
 
+
 ### 🖥️ Dashboard
 
 ![Preview 2](Dashboard.png)
 
+
 ### 📈 Fraud Distribution Charts
 
 ![Preview 3](Charts.png)
+
 
 ### 📋 Data Overview
 
