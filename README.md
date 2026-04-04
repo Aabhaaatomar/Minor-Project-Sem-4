@@ -101,7 +101,7 @@ The application is deployed using Streamlit Cloud and can be accessed online.
 
 ▶️ **Code Walkthrough**  
 
-👉🏻 [Watch Here](assets/videos/demo2.mp4)
+👉🏻 [Watch Here](https://drive.google.com/file/d/1PwNX1kOSlfxGxm05vSNyboouHSxsB9aH/view?usp=drivesdk)
 
 
 ---
