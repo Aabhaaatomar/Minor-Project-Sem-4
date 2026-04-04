@@ -7,9 +7,7 @@ import plotly.express as px
 st.set_page_config(page_title="UniPay FraudX", layout="wide")
 
 # 🔥 NAVBAR STYLE
-# 🎨 THEME TOGGLE
-theme = st.radio("Theme", ["Dark", "Light"], horizontal=True)
-
+theme = st.radio("Theme", ["Dark", "Light"], horizontal=True,key="theme_toggle")
 # 🎨 DYNAMIC CSS
 if theme == "Dark":
     st.markdown("""
@@ -104,8 +102,6 @@ df = pd.read_excel("data.xlsx")
 model = pickle.load(open("fraud_model.pkl", "rb"))
 
 # ------------------ CUSTOM CSS ------------------
-# 🎨 THEME TOGGLE
-theme = st.radio("Theme", ["Dark", "Light"], horizontal=True,key="theme_toggle")
 
 # 🎨 DYNAMIC CSS
 if theme == "Dark":
