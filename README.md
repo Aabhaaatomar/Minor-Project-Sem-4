@@ -95,11 +95,13 @@ The application is deployed using Streamlit Cloud and can be accessed online.
 
 ## 🎥 Demo Videos
 
-▶️ **App Demo (UI + Prediction)**  
+▶️ **App Demo (UI + Prediction)** 
 
+<video src="assets/videos/demo1.mp4" controls width="600"></video>
 
 ▶️ **Code Walkthrough**  
 
+<video src="assets/videos/demo2.mp4" controls width="600"></video>
 
 
 ---
