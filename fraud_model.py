@@ -9,6 +9,6 @@ def predict_fraud(amount, txn_count, hour):
     prediction = model.predict(data)[0]
     
     if prediction == 1:
-        return "🚨 Fraud Transaction"
+        return " Fraud Transaction"
     else:
-        return "✅ Normal Transaction"
+        return " Normal Transaction"
