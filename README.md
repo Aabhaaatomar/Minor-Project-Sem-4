@@ -86,6 +86,13 @@ Users can visualize transaction insights, risk levels, and patterns through an i
 
 ---
 
+## 🌐 Deployment  
+The application is deployed using Streamlit Cloud and can be accessed online.  
+
+👉 **Live Demo:** *https://minor-project-sem-4-2wdxbhegndunimrnis6i5r.streamlit.app/* 
+
+---
+
 ## 📌 Future Improvements  
 - Integration with real-time payment APIs  
 - Advanced ML models (Random Forest, XGBoost)  
