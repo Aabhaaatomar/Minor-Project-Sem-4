@@ -118,7 +118,7 @@ B.Tech CSE (Data Science)
 
 ## ⚙️ Installation
 
-git clone <repo-lhttps://github.com/Aabhaaatomar/UniPay-FraudX-ink>
+git clone *https://github.com/Aabhaaatomar/UniPay-FraudX*
 
 pip install -r requirements.txt
 
