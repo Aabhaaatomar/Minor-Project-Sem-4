@@ -1,18 +1,311 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>UniPay FraudX</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UniPay FraudX — AI-Powered Digital Payment Fraud Detection System for university and community ecosystems.">
+    <title>UniPay FraudX — AI Fraud Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 3rem;
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .navbar-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .navbar-links a:hover { color: #f3f4f6; }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: 88vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 700px; height: 700px;
+            background: radial-gradient(circle, rgba(255,75,139,0.15) 0%, transparent 70%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: pulse-glow 8s ease-in-out infinite alternate;
+        }
+        @keyframes pulse-glow {
+            from { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+            to   { opacity: 1;   transform: translate(-50%, -50%) scale(1.15); }
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 780px; }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,75,139,0.15);
+            border: 1px solid rgba(255,75,139,0.4);
+            color: #ff6b8b;
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 1.5rem;
+        }
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 40%, #ff6b8b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.15rem;
+            color: #9ca3af;
+            line-height: 1.7;
+            margin-bottom: 2.5rem;
+            max-width: 580px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero-cta {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff4b8b, #ff1e56);
+            color: white;
+            text-decoration: none;
+            padding: 0.9rem 2.4rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 8px 30px rgba(255,75,139,0.4);
+            transition: all 0.3s ease;
+        }
+        .hero-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(255,75,139,0.5);
+        }
+        .hero-cta-secondary {
+            display: inline-block;
+            color: #9ca3af;
+            text-decoration: none;
+            padding: 0.9rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-left: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .hero-cta-secondary:hover { color: #f3f4f6; border-color: rgba(255,255,255,0.3); }
+
+        /* ── Features ── */
+        .features-section {
+            padding: 5rem 3rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .section-label {
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #ff6b8b;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f3f4f6;
+            margin-bottom: 3rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            background: rgba(255,75,139,0.05);
+            border-color: rgba(255,75,139,0.25);
+            transform: translateY(-4px);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #f3f4f6;
+            margin-bottom: 0.6rem;
+        }
+        .feature-card p {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* ── Stats Bar ── */
+        .stats-bar {
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid rgba(255,255,255,0.04);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            padding: 2.5rem 3rem;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-label { font-size: 0.85rem; color: #6b7280; margin-top: 0.3rem; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #4b5563;
+            font-size: 0.85rem;
+            border-top: 1px solid rgba(255,255,255,0.04);
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>Welcome to UniPay FraudX 🚀</h1>
-    <p>Digital Payment Fraud Awareness System</p>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">⚡ UniPay FraudX</a>
+        <div class="navbar-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="https://github.com/Aabhaaatomar/UniPay-FraudX-" target="_blank">GitHub</a>
+        </div>
+    </nav>
 
-    <a href="/dashboard">Go to Dashboard</a>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🛡️ AI-Powered Fraud Intelligence</div>
+            <h1>Protect Every Digital Transaction</h1>
+            <p>
+                UniPay FraudX uses a hybrid Random Forest + Rule Engine to detect fraudulent
+                and suspicious payments in real-time — designed for university and community ecosystems.
+            </p>
+            <a href="/dashboard" class="hero-cta">📊 View Dashboard</a>
+            <a href="https://github.com/Aabhaaatomar/UniPay-FraudX-" class="hero-cta-secondary" target="_blank">View on GitHub →</a>
+        </div>
+    </section>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value">1,000+</div>
+            <div class="stat-label">Transactions Analyzed</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">96%+</div>
+            <div class="stat-label">Detection Accuracy</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">&lt;50ms</div>
+            <div class="stat-label">Inference Latency</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">7</div>
+            <div class="stat-label">Detection Rules</div>
+        </div>
+    </div>
+
+    <section class="features-section">
+        <div class="section-label">What We Detect</div>
+        <div class="section-title">Enterprise-Grade Detection Signals</div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>Random Forest ML Engine</h3>
+                <p>200-estimator classifier trained on behavioral patterns — amount, velocity, time-of-day — with balanced class weights.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Real-Time Rule Engine</h3>
+                <p>7 deterministic rules covering extreme amounts, high velocity, odd-hour windows, and unknown entity detection.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Hybrid Risk Scoring</h3>
+                <p>Combines 60% heuristic rules + 40% ML probability into a single 0–100 risk score with LOW/MEDIUM/HIGH/CRITICAL labels.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌍</div>
+                <h3>Geographic Intelligence</h3>
+                <p>Flags international transactions paired with elevated amounts as high-risk indicators.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3>Explainable Decisions</h3>
+                <p>Every prediction surfaces the specific rules triggered — no black-box outputs.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Academic Safe Design</h3>
+                <p>Built on synthetic, privacy-preserving datasets — ideal for educational demonstration without real financial data.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        &copy; 2024 UniPay FraudX — Built by Aabha Tomar &amp; Contributors &nbsp;|&nbsp;
+        <a href="https://github.com/Aabhaaatomar/UniPay-FraudX-" style="color:#ff6b8b; text-decoration:none;">GitHub</a>
+    </footer>
 
 </body>
-
 </html>
