@@ -20,6 +20,10 @@ if "txn_val" not in st.session_state:
     st.session_state.txn_val = 2
 if "hour_val" not in st.session_state:
     st.session_state.hour_val = 14
+if "biometric_verified" not in st.session_state:
+    st.session_state.biometric_verified = False
+if "run_inference" not in st.session_state:
+    st.session_state.run_inference = False
 
 # ================== CSS THEME INJECTION ==================
 def inject_custom_css(theme):
@@ -456,8 +460,7 @@ elif "Prediction" in page:
                     fp = io.BytesIO()
                     tts.write_to_fp(fp)
                     fp.seek(0)
-                    b64 = base64.b64encode(fp.read()).decode()
-                    st.markdown(f'<audio autoplay="true"><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>', unsafe_allow_html=True)
+                    st.audio(fp.read(), format="audio/mp3", autoplay=True)
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -474,76 +477,94 @@ elif "Prediction" in page:
         
     with result_col:
         if predict_btn:
-            # Simple rules & ML Logic matching original app
-            risk_score = 0
-            if amount > 10000: risk_score += 50
-            if txn > 10: risk_score += 30
-            if 0 <= hour <= 5 and amount > 4000: risk_score += 20
+            st.session_state.run_inference = True
             
-            ml_pred = model.predict([[amount, txn, hour]])[0]
-            ml_proba = model.predict_proba([[amount, txn, hour]])[0]
-            confidence = max(ml_proba) * 100
-            
-            if risk_score > 70:
-                final_pred = 1
-                reason = "Heuristic Rule: Extreme high risk constraints violated."
-            elif risk_score > 40:
-                final_pred = 1
-                reason = "Heuristic Rule: Moderate risk constraints violated."
-            elif ml_pred == 1:
-                final_pred = 1
-                reason = "ML Inference: Random Forest anomaly detected."
-                risk_score = 85 # normalize for UI
+        if st.session_state.run_inference:
+            if amount > 50000 and not st.session_state.biometric_verified:
+                st.markdown("<div class='glass-card' style='text-align: center;'>", unsafe_allow_html=True)
+                st.markdown("### 📸 Biometric Security Check")
+                st.warning("High-value transaction detected (> ₹50,000). Please verify your identity.")
+                camera_photo = st.camera_input("Face ID Verification")
+                if camera_photo:
+                    st.success("Identity verified successfully!")
+                    st.session_state.biometric_verified = True
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
             else:
-                final_pred = 0
-                reason = "ML Inference: Behavioral patterns within normal bounds."
-                risk_score = 15 # normalize for UI
+                # Simple rules & ML Logic matching original app
+                risk_score = 0
+                if amount > 10000: risk_score += 50
+                if txn > 10: risk_score += 30
+                if 0 <= hour <= 5 and amount > 4000: risk_score += 20
                 
-            risk_level = "CRITICAL" if final_pred == 1 else "SAFE"
-            card_class = "result-danger" if final_pred == 1 else "result-success"
-            icon = "🚨" if final_pred == 1 else "✅"
-            color = "#ff1e56" if final_pred == 1 else "#00b894"
-            
-            st.markdown(f"""
-                <div class="{card_class}">
-                    <h3 style="margin-top:0; color: {color} !important;">{icon} {risk_level} TRANSACTION</h3>
-                    <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
+                ml_pred = model.predict([[amount, txn, hour]])[0]
+                ml_proba = model.predict_proba([[amount, txn, hour]])[0]
+                confidence = max(ml_proba) * 100
+                
+                if risk_score > 70:
+                    final_pred = 1
+                    reason = "Heuristic Rule: Extreme high risk constraints violated."
+                elif risk_score > 40:
+                    final_pred = 1
+                    reason = "Heuristic Rule: Moderate risk constraints violated."
+                elif ml_pred == 1:
+                    final_pred = 1
+                    reason = "ML Inference: Random Forest anomaly detected."
+                    risk_score = 85 # normalize for UI
+                else:
+                    final_pred = 0
+                    reason = "ML Inference: Behavioral patterns within normal bounds."
+                    risk_score = 15 # normalize for UI
                     
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="font-size:0.9rem; font-weight:600;">Fraud Probability</span>
-                        <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
-                    </div>
-                    <div class="progress-bg">
-                        <div class="progress-fill" style="width: {confidence}%; background: {color};"></div>
-                    </div>
-                    
-                    <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Calculated Risk Score</div>
-                            <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
+                risk_level = "CRITICAL" if final_pred == 1 else "SAFE"
+                card_class = "result-danger" if final_pred == 1 else "result-success"
+                icon = "🚨" if final_pred == 1 else "✅"
+                color = "#ff1e56" if final_pred == 1 else "#00b894"
+                
+                st.markdown(f"""
+                    <div class="{card_class}">
+                        <h3 style="margin-top:0; color: {color} !important;">{icon} {risk_level} TRANSACTION</h3>
+                        <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
+                        
+                        <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                            <span style="font-size:0.9rem; font-weight:600;">Fraud Probability</span>
+                            <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
                         </div>
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Engine</div>
-                            <div style="font-size:1.1rem; font-weight:600;">RandomForest + Rules</div>
+                        <div class="progress-bg">
+                            <div class="progress-fill" style="width: {confidence}%; background: {color};"></div>
+                        </div>
+                        
+                        <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div>
+                                <div style="font-size:0.8rem; opacity:0.7;">Calculated Risk Score</div>
+                                <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
+                            </div>
+                            <div>
+                                <div style="font-size:0.8rem; opacity:0.7;">Engine</div>
+                                <div style="font-size:1.1rem; font-weight:600;">RandomForest + Rules</div>
+                            </div>
+                        </div>
                         </div>
                     </div>
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            # AI Audio Alert for Fraud
-            if final_pred == 1:
+                """, unsafe_allow_html=True)
+                
+                # AI Audio Alert for Fraud & Safe Transactions
                 try:
-                    tts = gTTS(text="Warning: Fraudulent transaction detected. Please verify.", lang='en')
+                    if final_pred == 1:
+                        tts = gTTS(text="Warning: Fraudulent transaction detected. Please verify.", lang='en')
+                    else:
+                        tts = gTTS(text="Transaction is safe.", lang='en')
+                        
                     fp = io.BytesIO()
                     tts.write_to_fp(fp)
                     fp.seek(0)
-                    b64 = base64.b64encode(fp.read()).decode()
-                    st.markdown(f'<audio autoplay="true"><source src="data:audio/mp3;base64,{b64}" type="audio/mp3"></audio>', unsafe_allow_html=True)
+                    st.audio(fp.read(), format="audio/mp3", autoplay=True)
                 except Exception as e:
                     pass
+                st.session_state.run_inference = False
+                st.session_state.biometric_verified = False
         else:
             st.markdown("""
                 <div style="height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.5; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center;">
