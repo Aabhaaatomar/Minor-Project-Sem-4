@@ -1,10 +1,15 @@
+import sys
+import os
+# Make models/ importable regardless of working directory
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "models"))
+
 import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
-import os
 import joblib
 import plotly.graph_objects as go
+from fraud_detector import analyze_transaction
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_state="expanded")
 
@@ -420,61 +425,65 @@ elif "Prediction" in page:
         
     with result_col:
         if predict_btn:
-            # Simple rules & ML Logic matching original app
-            risk_score = 0
-            if amount > 10000: risk_score += 50
-            if txn > 10: risk_score += 30
-            if 0 <= hour <= 5 and amount > 4000: risk_score += 20
+            # ── Hybrid fraud analysis via fraud_detector module ──
+            result = analyze_transaction(
+                amount=amount,
+                txn_count=txn,
+                hour=hour,
+                model=model,
+            )
+
+            final_pred  = 1 if result["is_fraud"] else 0
+            risk_score  = result["fraud_score"]          # real calculated score 0–100
+            reason      = result["reason"]
+            risk_level  = result["risk_label"]            # LOW / MEDIUM / HIGH / CRITICAL
+            confidence  = result["ml_proba"] * 100        # actual ML fraud probability %
+            rules_fired = result["triggered_rules"]
+
+            card_class  = "result-danger" if final_pred == 1 else "result-success"
+            icon        = "🚨" if final_pred == 1 else "✅"
+            color       = "#ff1e56" if final_pred == 1 else "#00b894"
+            display_verdict = "SUSPICIOUS" if final_pred == 1 else "SAFE"
             
-            ml_pred = model.predict([[amount, txn, hour]])[0]
-            ml_proba = model.predict_proba([[amount, txn, hour]])[0]
-            confidence = max(ml_proba) * 100
-            
-            if risk_score > 70:
-                final_pred = 1
-                reason = "Heuristic Rule: Extreme high risk constraints violated."
-            elif risk_score > 40:
-                final_pred = 1
-                reason = "Heuristic Rule: Moderate risk constraints violated."
-            elif ml_pred == 1:
-                final_pred = 1
-                reason = "ML Inference: Random Forest anomaly detected."
-                risk_score = 85 # normalize for UI
-            else:
-                final_pred = 0
-                reason = "ML Inference: Behavioral patterns within normal bounds."
-                risk_score = 15 # normalize for UI
-                
-            risk_level = "CRITICAL" if final_pred == 1 else "SAFE"
-            card_class = "result-danger" if final_pred == 1 else "result-success"
-            icon = "🚨" if final_pred == 1 else "✅"
-            color = "#ff1e56" if final_pred == 1 else "#00b894"
-            
+            # Build triggered rules HTML
+            rules_html = ""
+            if rules_fired:
+                rules_items = "".join(
+                    f"<li style='margin-bottom:4px; font-size:0.85rem; opacity:0.85;'>{r}</li>"
+                    for r in rules_fired
+                )
+                rules_html = f"""
+                    <hr style="border:1px solid rgba(128,128,128,0.1); margin: 16px 0;">
+                    <div style="font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:8px;">TRIGGERED RULES</div>
+                    <ul style="margin:0; padding-left:18px; list-style:disc;">{rules_items}</ul>
+                """
+
             st.markdown(f"""
                 <div class="{card_class}">
-                    <h3 style="margin-top:0; color: {color} !important;">{icon} {risk_level} TRANSACTION</h3>
+                    <h3 style="margin-top:0; color: {color} !important;">{icon} {display_verdict} — {risk_level} RISK</h3>
                     <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
-                    
+
                     <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="font-size:0.9rem; font-weight:600;">Fraud Probability</span>
+                        <span style="font-size:0.9rem; font-weight:600;">ML Fraud Probability</span>
                         <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
                     </div>
                     <div class="progress-bg">
-                        <div class="progress-fill" style="width: {confidence}%; background: {color};"></div>
+                        <div class="progress-fill" style="width: {min(confidence, 100):.1f}%; background: {color};"></div>
                     </div>
-                    
+
                     <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
-                    
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Calculated Risk Score</div>
+                            <div style="font-size:0.8rem; opacity:0.7;">Risk Score (Calculated)</div>
                             <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
                         </div>
                         <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Engine</div>
-                            <div style="font-size:1.1rem; font-weight:600;">RandomForest + Rules</div>
+                            <div style="font-size:0.8rem; opacity:0.7;">Recommendation</div>
+                            <div style="font-size:1.1rem; font-weight:600;">{result['recommendation'].replace('_', ' ')}</div>
                         </div>
                     </div>
+                    {rules_html}
                 </div>
             """, unsafe_allow_html=True)
         else:
