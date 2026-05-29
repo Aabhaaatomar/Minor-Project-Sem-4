@@ -1,10 +1,15 @@
+import sys
+import os
+# Make models/ importable regardless of working directory
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "models"))
+
 import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
-import os
 import joblib
 import plotly.graph_objects as go
+from fraud_detector import analyze_transaction
 
 # 1. Page Configuration
 st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_state="expanded")
@@ -388,107 +393,74 @@ elif "Prediction Engine" in page:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 
         if predict_btn:
-
             risk_score = 0
-            if amount > 10000:
-                risk_score += 50
-            if txn > 10:
-                risk_score += 30
-            if 0 <= hour <= 5 and amount > 4000:
-                risk_score += 20
-
+            if amount > 10000: risk_score += 50
+            if txn > 10: risk_score += 30
+            if 0 <= hour <= 5 and amount > 4000: risk_score += 20
+            
+            # Safe Inference execution
             ml_pred = model.predict([[amount, txn, hour]])[0]
-            ml_proba = model.predict_proba([[amount, txn, hour]])[0]
-
+            ml_proba_matrix = model.predict_proba([[amount, txn, hour]])[0] # Yields [prob_safe, prob_fraud]
+            
             if risk_score > 70:
                 final_pred = 1
-                reason = "Extreme high-risk pattern detected (rule engine)."
+                reason = "Heuristic Rule: Extreme high risk constraints violated."
             elif risk_score > 40:
                 final_pred = 1
-                reason = "Moderate risk pattern detected (rule engine)."
+                reason = "Heuristic Rule: Moderate risk constraints violated."
             elif ml_pred == 1:
                 final_pred = 1
-                reason = "ML model detected anomaly in transaction behavior."
-                risk_score = 85
+                reason = "ML Inference: Random Forest anomaly detected."
+                risk_score = 85 
             else:
                 final_pred = 0
-                reason = "Transaction appears normal based on ML + rules."
-                risk_score = 15
-
-            is_fraud = final_pred == 1
-
-            # ================= HEADER BADGE =================
-            if is_fraud:
-                icon = "🚨"
-                status = "HIGH RISK"
-                color = "#ff4d6d"
-                confidence = float(ml_proba[0][1]) * 100
+                reason = "ML Inference: Behavioral patterns within normal bounds."
+                risk_score = 15 
+                
+            risk_level = "CRITICAL" if final_pred == 1 else "SAFE"
+            card_class = "result-danger" if final_pred == 1 else "result-success"
+            icon = "🚨" if final_pred == 1 else "✅"
+            color = "#ff1e56" if final_pred == 1 else "#00b894"
+            
+            # TypeError Fix: Extract floats directly using numerical matrix indices
+            if final_pred == 1:
+                confidence_val = float(ml_proba_matrix[1]) * 100
                 confidence_label = "Fraud Probability"
             else:
-                icon = "🟢"
-                status = "SAFE"
-                color = "#00b894"
-                confidence = float(ml_proba[0][0]) * 100
+                confidence_val = float(ml_proba_matrix[0]) * 100
                 confidence_label = "Legitimate Confidence"
-
-            st.markdown(
-                f"""
-                <div style="
-                    padding:12px 16px;
-                    border-radius:12px;
-                    background:rgba(255,255,255,0.03);
-                    border-left:5px solid {color};
-                    margin-bottom:15px;">
-                    <h3 style="margin:0; color:{color};">
-                        {icon} {status} TRANSACTION
-                    </h3>
+            
+            # HTML Injection Fix: Strict clean inline variable construction
+            html_output = f"""
+            <div class="result-box {card_class}">
+                <h3 style="margin-top:0; color: {color} !important; font-weight:700;">{icon} {risk_level} TRANSACTION</h3>
+                <p style="opacity:0.8; font-size:0.95rem; margin-bottom: 25px; color:{chart_font_color} !important;">{reason}</p>
+                
+                <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
+                    <span style="font-size:0.9rem; font-weight:600; color:{chart_font_color};">{confidence_label}</span>
+                    <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence_val:.1f}%</span>
                 </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-            # ================= REASON =================
-            st.caption("Decision Reason")
-            st.write(reason)
-
-            st.divider()
-
-            # ================= CONFIDENCE =================
-            st.subheader(confidence_label)
-
-            col1, col2 = st.columns([3, 1])
-
-            with col1:
-                st.progress(int(confidence))
-
-            with col2:
-                st.markdown(
-                    f"<h4 style='margin-top:5px; color:{color};'>{confidence:.1f}%</h4>",
-                    unsafe_allow_html=True
-                )
-
-            st.divider()
-
-            # ================= METRICS =================
-            m1, m2 = st.columns(2)
-
-            with m1:
-                st.metric(
-                    label="Risk Score",
-                    value=f"{risk_score}/100",
-                    delta=f"{'High' if risk_score > 70 else 'Low'} risk"
-                )
-
-            with m2:
-                st.metric(
-                    label="Engine",
-                    value="RandomForest + Rules"
-                )
-
+                <div class="progress-bg">
+                    <div class="progress-fill" style="width: {confidence_val}%; background: {color};"></div>
+                </div>
+                
+                <hr style="border:none; border-top:1px solid rgba(128,128,128,0.15); margin: 24px 0;">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.7; color:{chart_font_color}; text-transform:uppercase;">Calculated Risk Score</div>
+                        <div style="font-size:1.6rem; font-weight:700; color:{chart_font_color}; margin-top:5px;">{risk_score}/100</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.8rem; opacity:0.7; color:{chart_font_color}; text-transform:uppercase;">Engine</div>
+                        <div style="font-size:1.15rem; font-weight:600; color:{chart_font_color}; margin-top:5px;">RandomForest + Rules</div>
+                    </div>
+                </div>
+            </div>
+            """
+            st.markdown(html_output, unsafe_allow_html=True)
         else:
-            st.info("Enter transaction details and click **Initialize Inference** to see results.")
-
-        st.markdown("</div>", unsafe_allow_html=True)
+            st.info("Waiting for telemetry input... Enter parameters and click Initialize Inference.")
 elif "About" in page:
     st.markdown("<h2>System Architecture & Intelligence</h2>", unsafe_allow_html=True)
     st.markdown("""

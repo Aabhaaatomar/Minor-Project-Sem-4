@@ -2,47 +2,309 @@
 <html lang="en">
 
 <head>
-    <title>UniPay FraudX Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="UniPay FraudX Dashboard — Monitor and analyze transaction fraud patterns.">
+    <title>UniPay FraudX — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0f19;
+            color: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        /* ── Navbar ── */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 3rem;
+            background: rgba(17,24,39,0.9);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .navbar-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .navbar-links a:hover, .navbar-links a.active { color: #f3f4f6; }
+        .navbar-links a.active {
+            color: #ff6b8b;
+        }
+
+        /* ── Main Layout ── */
+        .dashboard-layout {
+            padding: 2.5rem 3rem;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .dashboard-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        .dashboard-subtitle {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* ── KPI Cards ── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+        .kpi-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .kpi-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.6rem;
+        }
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #ff4b8b, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .kpi-sub {
+            font-size: 0.82rem;
+            color: #4b5563;
+            margin-top: 0.4rem;
+        }
+        .kpi-card.normal .kpi-value {
+            background: linear-gradient(90deg, #00b894, #36cfc9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Section Divider ── */
+        .section-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin: 2rem 0;
+        }
+
+        /* ── Transaction Table ── */
+        .table-wrapper {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .table-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f3f4f6;
+        }
+        .table-count {
+            font-size: 0.8rem;
+            color: #6b7280;
+            background: rgba(255,255,255,0.05);
+            padding: 0.3rem 0.8rem;
+            border-radius: 99px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead tr {
+            background: rgba(255,255,255,0.03);
+        }
+        th {
+            padding: 0.9rem 1.2rem;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        td {
+            padding: 0.9rem 1.2rem;
+            font-size: 0.9rem;
+            color: #d1d5db;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        tbody tr {
+            transition: background 0.15s;
+        }
+        tbody tr:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        tbody tr:last-child td { border-bottom: none; }
+
+        /* ── Status Badges ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0.3rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+        .badge-normal {
+            background: rgba(0,184,148,0.15);
+            color: #00b894;
+            border: 1px solid rgba(0,184,148,0.3);
+        }
+        .badge-suspicious {
+            background: rgba(255,30,86,0.15);
+            color: #ff4b8b;
+            border: 1px solid rgba(255,30,86,0.3);
+        }
+
+        /* ── Transaction ID ── */
+        .txn-id {
+            font-family: monospace;
+            font-size: 0.82rem;
+            color: #6b7280;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #4b5563;
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    </style>
 </head>
 
 <body>
 
-    <h1>📊 UniPay FraudX Dashboard</h1>
-    <p>Transaction Monitoring & Fraud Awareness System</p>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">⚡ UniPay FraudX</a>
+        <div class="navbar-links">
+            <a href="/">Home</a>
+            <a href="/dashboard" class="active">📊 Dashboard</a>
+        </div>
+    </nav>
 
-    <div class="nav">
-        <a href="/">🏠 Home</a>
-        <a href="/dashboard">📊 Dashboard</a>
+    <div class="dashboard-layout">
+
+        <h1 class="dashboard-title">Transaction Dashboard</h1>
+        <p class="dashboard-subtitle">Real-time fraud monitoring and transaction intelligence</p>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total Transactions</div>
+                <div class="kpi-value">{{ total_txn }}</div>
+                <div class="kpi-sub">Across all records</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">🚨 Suspicious</div>
+                <div class="kpi-value">{{ suspicious_txn }}</div>
+                <div class="kpi-sub">Flagged for review</div>
+            </div>
+            <div class="kpi-card normal">
+                <div class="kpi-label">✅ Normal</div>
+                <div class="kpi-value">{{ normal_txn }}</div>
+                <div class="kpi-sub">Cleared transactions</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Fraud Rate</div>
+                {% if total_txn > 0 %}
+                <div class="kpi-value">{{ "%.1f"|format(suspicious_txn / total_txn * 100) }}%</div>
+                {% else %}
+                <div class="kpi-value">0%</div>
+                {% endif %}
+                <div class="kpi-sub">Of total volume</div>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- Transaction Table -->
+        <div class="table-wrapper">
+            <div class="table-header">
+                <h3>Recent Transactions</h3>
+                <span class="table-count">{{ total_txn }} records</span>
+            </div>
+
+            {% if transactions %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Amount (₹)</th>
+                        <th>Hour</th>
+                        <th>Txn Count (1hr)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                    <tr>
+                        <td><span class="txn-id">{{ t.transaction_id }}</span></td>
+                        <td><strong>₹{{ "{:,.2f}".format(t.amount) }}</strong></td>
+                        <td>{{ "%02d:00"|format(t.hour) }}</td>
+                        <td>{{ t.txn_count_1hr }}</td>
+                        <td>
+                            {% if t.label == "Suspicious" %}
+                            <span class="badge badge-suspicious">🔴 Suspicious</span>
+                            {% else %}
+                            <span class="badge badge-normal">🟢 Normal</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">📭</div>
+                <p>No transaction data available.</p>
+            </div>
+            {% endif %}
+        </div>
+
     </div>
 
-    <h2>Recent Transactions (Dataset View)</h2>
-
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Amount (₹)</th>
-            <th>Hour</th>
-            <th>Txn Count</th>
-            <th>Status</th>
-        </tr>
-
-        {% for t in transactions %}
-        <tr>
-            <td>{{ t.transaction_id }}</td>
-            <td>{{ t.amount }}</td>
-            <td>{{ t.hour }}</td>
-            <td>{{ t.txn_count_1hr }}</td>
-
-            {% if t.label == "Suspicious" %}
-            <td class="suspicious">{{ t.label }}</td>
-            {% else %}
-            <td class="normal">{{ t.label }}</td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </table>
-
 </body>
-
 </html>

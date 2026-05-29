@@ -1,12 +1,6 @@
 streamlit
 pandas
 numpy
-plotly
 scikit-learn
+plotly
 openpyxl
-joblib
-flask
-flask-jwt-extended
-flask-sqlalchemy
-flask-mail
-flask-socketio
