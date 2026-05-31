@@ -28,61 +28,67 @@ Existing fraud detection systems are often complex, expensive, and not suitable 
 ---
 
 ## 💡 Proposed Solution  
-UniPay FraudX is a web-based application that uses machine learning to analyze transaction data and detect anomalies.  
+UniPay FraudX combines **rule-based detection** with **machine learning** to analyze transaction patterns in real-time.  
 
-The system processes transaction inputs, applies a trained model, and classifies them into fraud or normal categories.  
+### Key Features:
+- **Hybrid Detection Engine**: Combines heuristic rules with Random Forest ML model
+- **Real-time Analysis**: Instant fraud probability scoring (0-100)
+- **Risk Classification**: Automatic categorization (LOW/MEDIUM/HIGH/CRITICAL)
+- **Interactive Dashboard**: Visual analytics with Plotly charts
+- **Explainable AI**: Shows which rules triggered the fraud alert
 
-Users can visualize transaction insights, risk levels, and patterns through an interactive dashboard, making the system both educational and practical.
+The system processes transaction inputs, applies both rule-based checks and ML inference, then provides actionable recommendations (APPROVE/FLAG/BLOCK).
 
 ---
 
 ## 🛠️ Tech Stack  
 
-### 🔹 Backend  
-- Python  
-- Streamlit  
+**Backend & ML:**
+- Python 3.11+
+- Streamlit (Web Framework)
+- Scikit-learn (Random Forest Classifier)
+- Pandas & NumPy (Data Processing)
 
-### 🔹 Machine Learning  
-- Scikit-learn (Logistic Regression)  
+**Frontend & Visualization:**
+- Streamlit UI Components
+- Plotly (Interactive Charts)
+- Custom CSS (Glassmorphism Design)
 
-### 🔹 Data Processing  
-- Pandas  
-- NumPy  
-
-### 🔹 Visualization  
-- Plotly  
-
-### 🔹 Frontend  
-- Streamlit UI  
-- HTML / CSS  
+**Data:**
+- Excel/XLSX (Dataset Storage)
+- Pickle (Model Serialization)  
 
 ---
 
 ## 📊 Features  
-- 📈 Interactive dashboard with charts  
-- 🔍 Real-time fraud prediction  
-- ⚠️ Risk level detection (Normal / Suspicious)  
-- 🎨 Dark & Light theme support  
-- 📊 Data visualization (Pie, Bar, Line charts)  
-- 🧠 Machine learning-based classification  
-- 🖥️ Clean and modern UI  
+✅ **Real-time Fraud Prediction** - Instant ML-powered transaction analysis  
+✅ **Interactive Dashboard** - Live charts and KPI metrics  
+✅ **Risk Scoring System** - 0-100 fraud probability with severity levels  
+✅ **Rule Engine** - Detects high amounts, velocity attacks, odd-hour transactions  
+✅ **Data Visualization** - Pie charts, bar graphs, line trends, scatter plots  
+✅ **Dark/Light Theme** - Modern glassmorphism UI design  
+✅ **Explainable Results** - Shows triggered rules and ML confidence  
+✅ **Transaction Explorer** - Browse and analyze historical data  
 
 ---
 
 ## 🔄 System Workflow  
-1. User inputs transaction details  
-2. Data is preprocessed  
-3. ML model analyzes the input  
-4. Transaction is classified  
-5. Result is displayed with insights  
-6. Dashboard updates with visualization  
+1. **User Input** → Transaction details (amount, velocity, time)
+2. **Rule Engine** → Checks heuristic fraud patterns
+3. **ML Model** → Random Forest probability inference
+4. **Hybrid Scoring** → Combines rules (60%) + ML (40%)
+5. **Risk Classification** → Assigns severity level
+6. **Recommendation** → APPROVE / FLAG_FOR_REVIEW / BLOCK
+7. **Dashboard Update** → Real-time visualization  
 
 ---
 
 ## 📂 Dataset  
-- AI-generated simulated dataset  
-- Designed to mimic real-world digital transactions  
-- Ensures privacy and safe academic usage  
+- **Source**: AI-generated synthetic transaction data
+- **Purpose**: Simulates real-world digital payment patterns
+- **Privacy**: Safe for academic and educational use
+- **Features**: Amount, transaction velocity, time, entity types, location
+- **Labels**: Normal vs Suspicious transactions  
 
 ---
 
@@ -93,12 +99,15 @@ The application is deployed using Streamlit Cloud and can be accessed online.
 
 ---
 
-## 📌 Future Improvements  
-- Integration with real-time payment APIs  
-- Advanced ML models (Random Forest, XGBoost)  
-- Fraud probability scoring  
-- User authentication system  
-- Real dataset integration  
+## 📌 Future Enhancements  
+- 🔗 Real-time payment gateway API integration  
+- 🤖 Advanced ML models (XGBoost, Neural Networks)  
+- 📧 Email/SMS alert notifications  
+- 🔐 User authentication & role-based access  
+- 📱 Mobile-responsive PWA version  
+- 🗄️ Database integration (PostgreSQL/MongoDB)  
+- 📊 Advanced analytics & reporting dashboard  
+- 🌐 Multi-language support  
 
 ---
 
@@ -120,33 +129,61 @@ B.Tech CSE (Data Science)
 ## 📂 Project Structure
 ```text
 UniPay-FraudX/
-├── dataset/              # Transaction datasets
-├── models/               # Pre-trained ML models
-├── backend_archive/      # (Archived) Older Flask backend files
-├── templates/            # (Archived) Older HTML templates
-├── static/               # (Archived) Older CSS files
-├── app.py                # Main Streamlit Dashboard Application
-├── requirements.txt      # Project dependencies
-└── README.md             # Project documentation
+├── app.py                    # Main Streamlit application
+├── retrain_model.py          # Model retraining script
+├── data.xlsx                 # Transaction dataset
+├── fraud_model.pkl           # Trained ML model
+├── models/
+│   ├── fraud_detector.py     # Hybrid fraud detection engine
+│   ├── fraud_model.py        # Model inference utilities
+│   └── model.py              # Advanced model training script
+├── dataset/                  # Alternative dataset location
+├── backend_archive/          # (Archived) Flask backend files
+├── templates/                # (Archived) HTML templates
+├── static/                   # (Archived) CSS files
+├── requirements.txt          # Python dependencies
+└── README.md                 # Documentation
 ```
 
-## ⚙️ Installation
+## ⚙️ Installation & Setup
 
-1. Clone the repository:
+### Quick Start
+
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/Aabhaaatomar/UniPay-FraudX
 cd UniPay-FraudX
 ```
 
-2. Install the required dependencies:
+2. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Run the application:
+3. **Train the model** (first time only):
+```bash
+python retrain_model.py
+```
+
+4. **Run the application:**
 ```bash
 streamlit run app.py
 ```
+
+5. **Access the app:**
+   - Open your browser and go to `http://localhost:8501`
+   - The app will automatically open in your default browser
+
+### Troubleshooting
+
+**If you see "Model not found" error:**
+```bash
+python retrain_model.py
+```
+
+**If you see "Dataset not found" error:**
+- Ensure `data.xlsx` exists in the root directory
+- Or place your dataset in `dataset/data.xlsx`
 
 ---
 

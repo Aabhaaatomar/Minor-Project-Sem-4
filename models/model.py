@@ -18,7 +18,8 @@ from sklearn.metrics import classification_report, roc_auc_score
 BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATASET_DIR = os.path.join(BASE_DIR, "dataset")
 DATASET_PATH = os.path.join(DATASET_DIR, "data.xlsx")
-MODEL_PATH   = os.path.join(BASE_DIR, "models", "fraud_model.pkl")
+# Save model in root directory where app.py expects it
+MODEL_PATH   = os.path.join(BASE_DIR, "fraud_model.pkl")
 
 # ── Dataset Generation ─────────────────────────────────────────────────────────
 def generate_dataset(n=1000, seed=42):
