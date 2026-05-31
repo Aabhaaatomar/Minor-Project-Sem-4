@@ -1,6 +1,5 @@
 import sys
 import os
-# Make models/ importable regardless of working directory
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "models"))
 
 import streamlit as st
@@ -13,24 +12,18 @@ from fraud_detector import analyze_transaction
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_state="expanded")
 
-# ================== CSS THEME INJECTION ==================
 def inject_custom_css(theme):
-    # Base Google Font
     st.markdown("""
         <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        * {
-            font-family: 'Inter', sans-serif !important;
-        }
+        * { font-family: 'Inter', sans-serif !important; }
         
-        /* Sidebar Styling */
         [data-testid="stSidebar"] {
             padding-top: 2rem;
             border-right: 1px solid rgba(255, 255, 255, 0.05);
         }
         
-        /* Modern Metric Card */
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -47,7 +40,6 @@ def inject_custom_css(theme):
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
         
-        /* Metric Styling */
         .metric-title {
             font-size: 0.9rem;
             font-weight: 500;
@@ -70,7 +62,6 @@ def inject_custom_css(theme):
             margin-top: 8px;
         }
 
-        /* Gradient Button */
         .stButton > button {
             background: linear-gradient(135deg, #ff4b8b 0%, #ff1e56 100%);
             color: white !important;
@@ -88,10 +79,7 @@ def inject_custom_css(theme):
             background: linear-gradient(135deg, #ff1e56 0%, #ff4b8b 100%);
         }
 
-        /* Probability Meter Animation */
-        @keyframes fillBar {
-            from { width: 0%; }
-        }
+        @keyframes fillBar { from { width: 0%; } }
         .progress-bg {
             background: rgba(255,255,255,0.1);
             border-radius: 8px;
@@ -106,7 +94,6 @@ def inject_custom_css(theme):
             animation: fillBar 1.5s cubic-bezier(0.1, 0.7, 0.1, 1) forwards;
         }
 
-        /* Result Alert Boxes */
         .result-box {
             padding: 24px;
             border-radius: 16px;
@@ -127,10 +114,7 @@ def inject_custom_css(theme):
             border-left: 6px solid #00b894;
         }
         
-        /* Top Spacing fix */
-        .block-container {
-            padding-top: 2rem !important;
-        }
+        .block-container { padding-top: 2rem !important; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -156,30 +140,25 @@ def inject_custom_css(theme):
             </style>
         """, unsafe_allow_html=True)
 
-# ================== DATA LOADING ==================
+
 @st.cache_data
 def load_data():
-    # Try multiple possible locations for the data file
     possible_paths = [
         "data.xlsx",
         os.path.join("dataset", "data.xlsx")
     ]
-    
     for dataset_path in possible_paths:
         if os.path.exists(dataset_path):
             return pd.read_excel(dataset_path)
-    
     st.error(f"Dataset not found. Tried: {', '.join(possible_paths)}")
     return pd.DataFrame()
 
 @st.cache_resource
 def load_model():
-    # Try multiple possible locations for the model file
     possible_paths = [
         "fraud_model.pkl",
         os.path.join("models", "fraud_model.pkl")
     ]
-    
     for model_path in possible_paths:
         if os.path.exists(model_path):
             try:
@@ -187,7 +166,6 @@ def load_model():
             except Exception as e:
                 st.error(f"Error loading model from {model_path}: {e}")
                 continue
-    
     st.error(f"Model not found. Tried: {', '.join(possible_paths)}")
     return None
 
@@ -198,7 +176,6 @@ if df.empty or model is None:
     st.warning("⚠️ Application is running in limited mode due to missing data or model.")
     st.stop()
 
-# ================== NAVIGATION & SIDEBAR ==================
 st.sidebar.markdown(
     """
     <div style="text-align: center; margin-bottom: 2rem;">
@@ -210,12 +187,12 @@ st.sidebar.markdown(
 
 st.sidebar.markdown("### Navigation")
 page = st.sidebar.radio(
-    label="Navigation", 
+    label="Navigation",
     options=[
-        "🏠 Home", 
-        "📊 Dashboard", 
-        "🔍 Analysis", 
-        "🔮 Prediction Engine", 
+        "🏠 Home",
+        "📊 Dashboard",
+        "🔍 Analysis",
+        "🔮 Prediction Engine",
         "⚙️ About"
     ],
     label_visibility="collapsed"
@@ -228,7 +205,6 @@ theme = "Dark" if "Dark" in theme_choice else "Light"
 
 inject_custom_css(theme)
 
-# Plotly Theme Settings
 chart_font_color = "#f3f4f6" if theme == "Dark" else "#1e293b"
 chart_bg_color = "rgba(0,0,0,0)"
 
@@ -243,12 +219,10 @@ def apply_plotly_layout(fig):
     )
     return fig
 
-# ================== PAGES ==================
 
 if "Home" in page:
     st.markdown("""
         <style>
-        /* Hero Section */
         .hero-container {
             height: 75vh;
             display: flex;
@@ -300,9 +274,7 @@ if "Home" in page:
             z-index: 1;
             margin-top: 20px;
         }
-        .stat-item {
-            text-align: center;
-        }
+        .stat-item { text-align: center; }
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
@@ -310,19 +282,7 @@ if "Home" in page:
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.7;
-            margin-top: 5px;
-        }
-        
-        /* Feature Cards */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin: 3rem 0;
-        }
+        .stat-label { font-size: 0.9rem; opacity: 0.7; margin-top: 5px; }
         .feature-card {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(10px);
@@ -338,22 +298,9 @@ if "Home" in page:
             box-shadow: 0 12px 40px rgba(255, 75, 139, 0.2);
             border-color: rgba(255, 75, 139, 0.3);
         }
-        .feature-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
-        .feature-title {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-        .feature-desc {
-            opacity: 0.75;
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-        
-        /* CTA Section */
+        .feature-icon { font-size: 3rem; margin-bottom: 16px; }
+        .feature-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 12px; }
+        .feature-desc { opacity: 0.75; line-height: 1.6; font-size: 0.95rem; }
         .cta-section {
             background: linear-gradient(135deg, rgba(255, 75, 139, 0.1) 0%, rgba(255, 30, 86, 0.05) 100%);
             border-radius: 20px;
@@ -362,42 +309,18 @@ if "Home" in page:
             margin-top: 3rem;
             border: 1px solid rgba(255, 75, 139, 0.15);
         }
-        .cta-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        .cta-subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            margin-bottom: 32px;
-        }
-        
-        /* Responsive Design */
+        .cta-title { font-size: 2rem; font-weight: 700; margin-bottom: 16px; }
+        .cta-subtitle { font-size: 1.1rem; opacity: 0.8; margin-bottom: 32px; }
         @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-            .hero-subtitle {
-                font-size: 1.1rem;
-            }
-            .hero-stats {
-                flex-direction: column;
-                gap: 20px;
-            }
-            .stat-number {
-                font-size: 2rem;
-            }
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-            .cta-section {
-                padding: 32px 24px;
-            }
+            .hero-title { font-size: 2.5rem; }
+            .hero-subtitle { font-size: 1.1rem; }
+            .hero-stats { flex-direction: column; gap: 20px; }
+            .stat-number { font-size: 2rem; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .cta-section { padding: 32px 24px; }
         }
         </style>
         
-        <!-- Hero Section -->
         <div class="hero-container">
             <div class="hero-title">🚀 Next-Gen Fraud Defense</div>
             <div class="hero-subtitle">
@@ -420,116 +343,82 @@ if "Home" in page:
             </div>
         </div>
     """, unsafe_allow_html=True)
-    
-    # Feature Cards Section
+
     st.markdown("<h2 style='text-align: center; margin: 3rem 0 2rem 0;'>🎯 Core Capabilities</h2>", unsafe_allow_html=True)
-    
+
     col1, col2, col3 = st.columns(3)
-    
     with col1:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>⚡</div>
                 <div class='feature-title'>Real-Time ML</div>
-                <div class='feature-desc'>
-                    Millisecond inference times for active transaction streams with Random Forest algorithms 
-                    trained on thousands of fraud patterns.
-                </div>
+                <div class='feature-desc'>Millisecond inference times for active transaction streams with Random Forest algorithms trained on thousands of fraud patterns.</div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col2:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>📊</div>
                 <div class='feature-title'>Deep Analytics</div>
-                <div class='feature-desc'>
-                    Identify complex behavioral patterns, velocity attacks, and emerging threats with 
-                    hybrid rule-based + ML detection engine.
-                </div>
+                <div class='feature-desc'>Identify complex behavioral patterns, velocity attacks, and emerging threats with hybrid rule-based + ML detection engine.</div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col3:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>🛡️</div>
                 <div class='feature-title'>Enterprise Scale</div>
-                <div class='feature-desc'>
-                    Designed for high-throughput fintech infrastructure with automatic risk scoring 
-                    and actionable recommendations.
-                </div>
+                <div class='feature-desc'>Designed for high-throughput fintech infrastructure with automatic risk scoring and actionable recommendations.</div>
             </div>
         """, unsafe_allow_html=True)
-    
-    # Second Row of Features
+
     col4, col5, col6 = st.columns(3)
-    
     with col4:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>🎯</div>
                 <div class='feature-title'>Smart Detection</div>
-                <div class='feature-desc'>
-                    Hybrid system combining heuristic rules with machine learning for superior 
-                    fraud detection accuracy and fewer false positives.
-                </div>
+                <div class='feature-desc'>Hybrid system combining heuristic rules with machine learning for superior fraud detection accuracy and fewer false positives.</div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col5:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>📈</div>
                 <div class='feature-title'>Visual Insights</div>
-                <div class='feature-desc'>
-                    Interactive dashboards with real-time charts, KPIs, and transaction analytics 
-                    for comprehensive fraud monitoring.
-                </div>
+                <div class='feature-desc'>Interactive dashboards with real-time charts, KPIs, and transaction analytics for comprehensive fraud monitoring.</div>
             </div>
         """, unsafe_allow_html=True)
-    
     with col6:
         st.markdown("""
             <div class='feature-card'>
                 <div class='feature-icon'>🔍</div>
                 <div class='feature-title'>Explainable AI</div>
-                <div class='feature-desc'>
-                    Transparent fraud decisions with detailed explanations of triggered rules, 
-                    risk scores, and ML confidence levels.
-                </div>
+                <div class='feature-desc'>Transparent fraud decisions with detailed explanations of triggered rules, risk scores, and ML confidence levels.</div>
             </div>
         """, unsafe_allow_html=True)
-    
-    # Call to Action Section
+
     st.markdown("""
         <div class='cta-section'>
             <div class='cta-title'>Ready to Secure Your Transactions?</div>
-            <div class='cta-subtitle'>
-                Explore our interactive dashboard, analyze fraud patterns, and test the prediction engine with real-time data.
-            </div>
+            <div class='cta-subtitle'>Explore our interactive dashboard, analyze fraud patterns, and test the prediction engine with real-time data.</div>
         </div>
     """, unsafe_allow_html=True)
-    
-    # Quick Links
+
     st.markdown("<br>", unsafe_allow_html=True)
     quick_col1, quick_col2, quick_col3, quick_col4 = st.columns(4)
-    
     with quick_col1:
         if st.button("📊 View Dashboard", use_container_width=True):
             st.session_state.page = "📊 Dashboard"
             st.rerun()
-    
     with quick_col2:
         if st.button("🔮 Try Prediction", use_container_width=True):
             st.session_state.page = "🔮 Prediction Engine"
             st.rerun()
-    
     with quick_col3:
         if st.button("🔍 Analyze Data", use_container_width=True):
             st.session_state.page = "🔍 Analysis"
             st.rerun()
-    
     with quick_col4:
         if st.button("⚙️ Learn More", use_container_width=True):
             st.session_state.page = "⚙️ About"
@@ -537,15 +426,13 @@ if "Home" in page:
 
 elif "Dashboard" in page:
     st.markdown("<h2>Analytics Dashboard</h2>", unsafe_allow_html=True)
-    
-    # KPIs
+
     total_tx = len(df)
     fraud_tx = len(df[df["label"] == "Suspicious"])
     fraud_rate = (fraud_tx / total_tx) * 100 if total_tx > 0 else 0
     total_vol = df["amount"].sum()
-    
+
     kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-    
     kpi1.markdown(f"""
         <div class="glass-card">
             <div class="metric-title">Total Volume</div>
@@ -553,7 +440,6 @@ elif "Dashboard" in page:
             <div class="metric-subtitle">Processed Transactions</div>
         </div>
     """, unsafe_allow_html=True)
-    
     kpi2.markdown(f"""
         <div class="glass-card">
             <div class="metric-title">Total Transactions</div>
@@ -561,7 +447,6 @@ elif "Dashboard" in page:
             <div class="metric-subtitle">Last 30 Days</div>
         </div>
     """, unsafe_allow_html=True)
-    
     kpi3.markdown(f"""
         <div class="glass-card">
             <div class="metric-title">Fraud Flags</div>
@@ -569,7 +454,6 @@ elif "Dashboard" in page:
             <div class="metric-subtitle">Suspicious Activities</div>
         </div>
     """, unsafe_allow_html=True)
-    
     kpi4.markdown(f"""
         <div class="glass-card">
             <div class="metric-title">Fraud Rate</div>
@@ -577,12 +461,10 @@ elif "Dashboard" in page:
             <div class="metric-subtitle">Of total volume</div>
         </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;'>", unsafe_allow_html=True)
-    
-    # Charts Row 1
+
     col1, col2 = st.columns(2)
-    
     with col1:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_bar = px.bar(
@@ -593,21 +475,15 @@ elif "Dashboard" in page:
         )
         st.plotly_chart(apply_plotly_layout(fig_bar), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
     with col2:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         df_line = df.groupby("hour")["amount"].mean().reset_index()
-        fig_line = px.line(
-            df_line, x="hour", y="amount",
-            title="Average Transaction Value Trend"
-        )
+        fig_line = px.line(df_line, x="hour", y="amount", title="Average Transaction Value Trend")
         fig_line.update_traces(line_color="#ff4b8b", line_width=3, fill='tozeroy', fillcolor='rgba(255,75,139,0.1)')
         st.plotly_chart(apply_plotly_layout(fig_line), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-    # Charts Row 2
     col3, col4 = st.columns([1, 1.5])
-    
     with col3:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_donut = px.pie(
@@ -618,7 +494,6 @@ elif "Dashboard" in page:
         fig_donut.update_layout(annotations=[dict(text=f'{fraud_rate:.1f}%<br>Fraud', x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color=chart_font_color))])
         st.plotly_chart(apply_plotly_layout(fig_donut), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
     with col4:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         fig_sender = px.bar(
@@ -629,15 +504,14 @@ elif "Dashboard" in page:
         st.plotly_chart(apply_plotly_layout(fig_sender), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
-
 elif "Analysis" in page:
     st.markdown("<h2>Data Intelligence Explorer</h2>", unsafe_allow_html=True)
-    
+
     st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
     st.markdown("#### Transaction Registry")
     st.dataframe(df, use_container_width=True, height=400)
     st.markdown("</div>", unsafe_allow_html=True)
-    
+
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
@@ -653,23 +527,20 @@ elif "Analysis" in page:
 elif "Prediction" in page:
     st.markdown("<h2>Real-time Fraud Prediction Engine</h2>", unsafe_allow_html=True)
     st.markdown("<p style='opacity: 0.8;'>Submit transaction telemetry for instant ML inference.</p>", unsafe_allow_html=True)
-    
+
     form_col, result_col = st.columns([1, 1.2])
-    
     with form_col:
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.markdown("#### Input Telemetry")
         amount = st.number_input("Transaction Value (₹)", min_value=0.0, value=1500.0, step=100.0)
         txn = st.number_input("Txn Velocity (Last 1hr)", min_value=0, value=2, step=1)
         hour = st.slider("Hour of Day", 0, 23, 14)
-        
         st.markdown("<br>", unsafe_allow_html=True)
         predict_btn = st.button("Initialize Inference", use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
     with result_col:
         if predict_btn:
-            # ── Hybrid fraud analysis via fraud_detector module ──
             result = analyze_transaction(
                 amount=amount,
                 txn_count=txn,
@@ -677,19 +548,18 @@ elif "Prediction" in page:
                 model=model,
             )
 
-            final_pred  = 1 if result["is_fraud"] else 0
-            risk_score  = result["fraud_score"]          # real calculated score 0–100
-            reason      = result["reason"]
-            risk_level  = result["risk_label"]            # LOW / MEDIUM / HIGH / CRITICAL
-            confidence  = result["ml_proba"] * 100        # actual ML fraud probability %
-            rules_fired = result["triggered_rules"]
+            final_pred      = 1 if result["is_fraud"] else 0
+            risk_score      = result["fraud_score"]
+            reason          = result["reason"]
+            risk_level      = result["risk_label"]
+            confidence      = result["ml_proba"] * 100
+            rules_fired     = result["triggered_rules"]
 
-            card_class  = "result-danger" if final_pred == 1 else "result-success"
-            icon        = "🚨" if final_pred == 1 else "✅"
-            color       = "#ff1e56" if final_pred == 1 else "#00b894"
+            card_class      = "result-danger" if final_pred == 1 else "result-success"
+            icon            = "🚨" if final_pred == 1 else "✅"
+            color           = "#ff1e56" if final_pred == 1 else "#00b894"
             display_verdict = "SUSPICIOUS" if final_pred == 1 else "SAFE"
-            
-            # Build triggered rules HTML
+
             rules_html = ""
             if rules_fired:
                 rules_items = "".join(
@@ -739,7 +609,7 @@ elif "Prediction" in page:
 
 elif "About" in page:
     st.markdown("<h2>System Architecture & Intelligence</h2>", unsafe_allow_html=True)
-    
+
     st.markdown("""
         <div class="glass-card">
             <h4>UniPay FraudX</h4>
