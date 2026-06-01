@@ -87,18 +87,43 @@ df = load_data()
 model = load_model()
 
 if df.empty or model is None:
-    st.error("🚨 Application cannot start — critical files are missing.")
+    st.markdown("""
+        <div style='
+            background: linear-gradient(145deg, rgba(255,30,86,0.08), rgba(255,75,139,0.04));
+            border-left: 6px solid #ff1e56;
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin: 40px auto;
+            max-width: 720px;
+        '>
+            <h2 style='color:#ff1e56; margin-top:0;'>⚠️ Setup Required</h2>
+            <p style='opacity:0.85; line-height:1.8;'>
+                UniPay FraudX could not start because one or more required files
+                are missing. Please follow the steps below to resolve this.
+            </p>
+        </div>
+    """, unsafe_allow_html=True)
+
     if df.empty:
-        st.markdown(
-            "**Missing dataset:** `dataset/data.xlsx`  \n"
-            "Please ensure the Excel dataset file exists in the `dataset/` folder."
+        st.error(
+            "**Missing: Dataset file**\n\n"
+            "Expected at: `dataset/data.xlsx`\n\n"
+            "Ensure the Excel dataset exists in the `dataset/` folder "
+            "before starting the application."
         )
+
     if model is None:
-        st.markdown(
-            "**Missing model:** `models/fraud_model.pkl`  \n"
-            "Run `python fraud_model.py` from the project root to train and generate the model."
+        st.error(
+            "**Missing: ML Model file**\n\n"
+            "Expected at: `models/fraud_model.pkl`\n\n"
+            "Run the following command from the project root to generate it:\n"
+            "```bash\npython fraud_model.py\n```"
         )
-    st.info("📖 See the [README](https://github.com/Aabhaaatomar/UniPay-FraudX#️-installation) for setup instructions.")
+
+    st.info(
+        "📖 For full setup instructions, refer to the "
+        "[README](https://github.com/Aabhaaatomar/UniPay-FraudX#️-installation)."
+    )
     st.stop()
 
 # ================== NAVIGATION & SIDEBAR ==================
