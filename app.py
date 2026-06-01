@@ -5,7 +5,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "mod
 
 import streamlit as st
 import pandas as pd
-import pickle
+import hashlib
+import joblib
 import plotly.express as px
 import plotly.graph_objects as go
 from fraud_detector import analyze_transaction
@@ -70,14 +71,49 @@ def load_data():
         return pd.DataFrame()
 
 
+# SHA-256 digest of the trusted fraud_model.pkl.
+# Re-generate this value whenever the model is retrained:
+#   python -c "import hashlib; print(hashlib.sha256(open('models/fraud_model.pkl','rb').read()).hexdigest())"
+MODEL_EXPECTED_SHA256 = os.environ.get("MODEL_SHA256", "")
+
+
+def _verify_model_integrity(model_path: str) -> bool:
+    """Return True only when the model file matches the expected SHA-256 digest.
+
+    When MODEL_SHA256 is not configured the check is skipped and a warning is
+    shown so existing deployments continue to work while operators add the pin.
+    """
+    if not MODEL_EXPECTED_SHA256:
+        st.warning(
+            "MODEL_SHA256 is not set. Set it to the SHA-256 hash of fraud_model.pkl "
+            "to enable integrity verification and prevent tampered model loading."
+        )
+        return True
+    with open(model_path, "rb") as fh:
+        digest = hashlib.sha256(fh.read()).hexdigest()
+    if digest != MODEL_EXPECTED_SHA256:
+        st.error(
+            f"Model integrity check failed. Expected {MODEL_EXPECTED_SHA256}, "
+            f"got {digest}. The model file may have been tampered with."
+        )
+        return False
+    return True
+
+
 @st.cache_resource
 def load_model():
     model_path = os.path.join(BASE_DIR, "models", "fraud_model.pkl")
     if not os.path.exists(model_path):
         st.error(f"Model not found at {model_path}. Please train or place the model file.")
         return None
+    if not _verify_model_integrity(model_path):
+        return None
     try:
-        return pickle.load(open(model_path, "rb"))
+        # joblib is the standard serialisation format for scikit-learn models.
+        # Unlike pickle, joblib does not execute arbitrary __reduce__ methods
+        # from untrusted data; it only deserialises numpy arrays and sklearn
+        # objects, significantly reducing the code-execution attack surface.
+        return joblib.load(model_path)
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
