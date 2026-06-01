@@ -87,7 +87,18 @@ df = load_data()
 model = load_model()
 
 if df.empty or model is None:
-    st.warning("⚠️ Application is running in limited mode due to missing data or model.")
+    st.error("🚨 Application cannot start — critical files are missing.")
+    if df.empty:
+        st.markdown(
+            "**Missing dataset:** `dataset/data.xlsx`  \n"
+            "Please ensure the Excel dataset file exists in the `dataset/` folder."
+        )
+    if model is None:
+        st.markdown(
+            "**Missing model:** `models/fraud_model.pkl`  \n"
+            "Run `python fraud_model.py` from the project root to train and generate the model."
+        )
+    st.info("📖 See the [README](https://github.com/Aabhaaatomar/UniPay-FraudX#️-installation) for setup instructions.")
     st.stop()
 
 # ================== NAVIGATION & SIDEBAR ==================
