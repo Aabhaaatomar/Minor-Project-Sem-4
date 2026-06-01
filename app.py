@@ -61,12 +61,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def load_data():
     dataset_path = os.path.join(BASE_DIR, "dataset", "data.xlsx")
     if not os.path.exists(dataset_path):
-        st.error(f"Dataset not found at {dataset_path}. Please ensure the data file exists.")
         return pd.DataFrame()
     try:
         return pd.read_excel(dataset_path)
-    except Exception as e:
-        st.error(f"Error reading dataset: {e}")
+    except Exception:
         return pd.DataFrame()
 
 
@@ -74,12 +72,10 @@ def load_data():
 def load_model():
     model_path = os.path.join(BASE_DIR, "models", "fraud_model.pkl")
     if not os.path.exists(model_path):
-        st.error(f"Model not found at {model_path}. Please train or place the model file.")
         return None
     try:
         return pickle.load(open(model_path, "rb"))
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
+    except Exception:
         return None
 
 
