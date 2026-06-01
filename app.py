@@ -7,7 +7,6 @@ import streamlit as st
 import pandas as pd
 import pickle
 import plotly.express as px
-import plotly.graph_objects as go
 from fraud_detector import analyze_transaction
 
 st.set_page_config(page_title="UniPay FraudX", layout="wide", initial_sidebar_state="expanded")
@@ -60,9 +59,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 @st.cache_data
 def load_data():
     dataset_path = os.path.join(BASE_DIR, "dataset", "data.xlsx")
+
     if not os.path.exists(dataset_path):
-        st.error(f"Dataset not found at {dataset_path}. Please ensure the data file exists.")
+        st.warning("⚠️ Dataset not found. Running in demo mode.")
         return pd.DataFrame()
+
     try:
         return pd.read_excel(dataset_path)
     except Exception as e:
@@ -77,7 +78,8 @@ def load_model():
         st.error(f"Model not found at {model_path}. Please train or place the model file.")
         return None
     try:
-        return pickle.load(open(model_path, "rb"))
+        with open(model_path, "rb") as f:
+            return pickle.load(f)
     except Exception as e:
         st.error(f"Error loading model: {e}")
         return None
@@ -86,9 +88,11 @@ def load_model():
 df = load_data()
 model = load_model()
 
-if df.empty or model is None:
-    st.warning("⚠️ Application is running in limited mode due to missing data or model.")
-    st.stop()
+if df.empty:
+    st.info("ℹ️ Running in demo mode (dataset/model not available). Full features will activate once files are added.")
+
+if model is None:
+    st.warning("⚠️ Model missing - prediction disabled")
 
 # ================== NAVIGATION & SIDEBAR ==================
 st.sidebar.markdown(
@@ -136,61 +140,78 @@ if "Home" in page:
             <p style='opacity:0.8; max-width:700px; margin:0 auto;'>Protect your digital ecosystem with real-time AI analytics and robust machine learning predictions.</p>
         </div>
     """, unsafe_allow_html=True)
+    
 
 elif "Dashboard" in page:
     st.markdown("<h2>Analytics Dashboard</h2>", unsafe_allow_html=True)
-    total_tx = len(df)
-    fraud_tx = len(df[df["label"] == "Suspicious"])
-    fraud_rate = (fraud_tx / total_tx) * 100 if total_tx > 0 else 0
-    total_vol = df["amount"].sum()
 
-    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-    kpi1.markdown(f"""
-        <div class='glass-card'><div class='metric-title'>Total Volume</div><div class='metric-value'>₹{total_vol/1000000:.2f}M</div><div class='metric-subtitle'>Processed Transactions</div></div>
-    """, unsafe_allow_html=True)
-    kpi2.markdown(f"""
-        <div class='glass-card'><div class='metric-title'>Total Transactions</div><div class='metric-value'>{total_tx:,}</div><div class='metric-subtitle'>Last 30 Days</div></div>
-    """, unsafe_allow_html=True)
-    kpi3.markdown(f"""
-        <div class='glass-card'><div class='metric-title'>Fraud Flags</div><div class='metric-value'>{fraud_tx:,}</div><div class='metric-subtitle'>Suspicious Activities</div></div>
-    """, unsafe_allow_html=True)
-    kpi4.markdown(f"""
-        <div class='glass-card'><div class='metric-title'>Fraud Rate</div><div class='metric-value'>{fraud_rate:.2f}%</div><div class='metric-subtitle'>Of total volume</div></div>
-    """, unsafe_allow_html=True)
+    required_columns = [
+        "label",
+        "amount",
+        "hour",
+        "txn_count_1hr",
+        "sender_type",
+        "receiver_type"
+    ]
 
-    st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;'>", unsafe_allow_html=True)
+    if df.empty or not all(col in df.columns for col in required_columns):
+        st.warning("⚠️ Dataset unavailable. Dashboard cannot be displayed.")
+    else:
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        fig_bar = px.bar(
-            df.groupby(["hour", "label"]) ["txn_count_1hr"].sum().reset_index(),
-            x="hour", y="txn_count_1hr", color="label",
-            title="Activity Volume by Hour",
-            color_discrete_sequence=["#00b894", "#ff4b8b"]
-        )
-        st.plotly_chart(apply_plotly_layout(fig_bar), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col2:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        df_line = df.groupby("hour")["amount"].mean().reset_index()
-        fig_line = px.line(df_line, x="hour", y="amount", title="Average Transaction Value Trend")
-        fig_line.update_traces(line_color="#ff4b8b", line_width=3, fill='tozeroy', fillcolor='rgba(255,75,139,0.1)')
-        st.plotly_chart(apply_plotly_layout(fig_line), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        total_tx = len(df)
+        fraud_tx = len(df[df["label"] == "Suspicious"])
+        fraud_rate = (fraud_tx / total_tx) * 100 if total_tx > 0 else 0
+        total_vol = df["amount"].sum()
 
-    col3, col4 = st.columns([1, 1.5])
-    with col3:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        fig_donut = px.pie(df, names="label", hole=0.6, title="Risk Distribution", color_discrete_sequence=["#00b894", "#ff4b8b"])
-        fig_donut.update_layout(annotations=[dict(text=f'{fraud_rate:.1f}%<br>Fraud', x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color=chart_font_color))])
-        st.plotly_chart(apply_plotly_layout(fig_donut), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    with col4:
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
-        fig_sender = px.bar(df, x="sender_type", color="receiver_type", title="Entity Type Correlation Matrix", barmode="stack", color_discrete_sequence=px.colors.qualitative.Pastel)
-        st.plotly_chart(apply_plotly_layout(fig_sender), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        # keep the rest of your dashboard code here
+
+        kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+        kpi1.markdown(f"""
+            <div class='glass-card'><div class='metric-title'>Total Volume</div><div class='metric-value'>₹{total_vol/1000000:.2f}M</div><div class='metric-subtitle'>Processed Transactions</div></div>
+        """, unsafe_allow_html=True)
+        kpi2.markdown(f"""
+            <div class='glass-card'><div class='metric-title'>Total Transactions</div><div class='metric-value'>{total_tx:,}</div><div class='metric-subtitle'>Last 30 Days</div></div>
+        """, unsafe_allow_html=True)
+        kpi3.markdown(f"""
+            <div class='glass-card'><div class='metric-title'>Fraud Flags</div><div class='metric-value'>{fraud_tx:,}</div><div class='metric-subtitle'>Suspicious Activities</div></div>
+        """, unsafe_allow_html=True)
+        kpi4.markdown(f"""
+            <div class='glass-card'><div class='metric-title'>Fraud Rate</div><div class='metric-value'>{fraud_rate:.2f}%</div><div class='metric-subtitle'>Of total volume</div></div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("<hr style='border: 1px solid rgba(255,255,255,0.05); margin: 2rem 0;'>", unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            fig_bar = px.bar(
+                df.groupby(["hour", "label"]) ["txn_count_1hr"].sum().reset_index(),
+                x="hour", y="txn_count_1hr", color="label",
+                title="Activity Volume by Hour",
+                color_discrete_sequence=["#00b894", "#ff4b8b"]
+            )
+            st.plotly_chart(apply_plotly_layout(fig_bar), use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            df_line = df.groupby("hour")["amount"].mean().reset_index()
+            fig_line = px.line(df_line, x="hour", y="amount", title="Average Transaction Value Trend")
+            fig_line.update_traces(line_color="#ff4b8b", line_width=3, fill='tozeroy', fillcolor='rgba(255,75,139,0.1)')
+            st.plotly_chart(apply_plotly_layout(fig_line), use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        col3, col4 = st.columns([1, 1.5])
+        with col3:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            fig_donut = px.pie(df, names="label", hole=0.6, title="Risk Distribution", color_discrete_sequence=["#00b894", "#ff4b8b"])
+            fig_donut.update_layout(annotations=[dict(text=f'{fraud_rate:.1f}%<br>Fraud', x=0.5, y=0.5, font_size=20, showarrow=False, font=dict(color=chart_font_color))])
+            st.plotly_chart(apply_plotly_layout(fig_donut), use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        with col4:
+            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+            fig_sender = px.bar(df, x="sender_type", color="receiver_type", title="Entity Type Correlation Matrix", barmode="stack", color_discrete_sequence=px.colors.qualitative.Pastel)
+            st.plotly_chart(apply_plotly_layout(fig_sender), use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
 elif "Analysis" in page:
@@ -229,56 +250,76 @@ elif "Prediction" in page or "Prediction Engine" in page:
         st.markdown("</div>", unsafe_allow_html=True)
 
     with result_col:
+
         if predict_btn:
-            result = analyze_transaction(amount=amount, txn_count=txn, hour=hour, model=model)
 
-            final_pred  = 1 if result["is_fraud"] else 0
-            risk_score  = result["fraud_score"]
-            reason      = result["reason"]
-            risk_level  = result["risk_label"]
-            confidence  = result["ml_proba"] * 100
-            rules_fired = result["triggered_rules"]
+            if model is None:
+                st.error(
+                    "⚠️ Prediction unavailable because model file is missing."
+                )
 
-            card_class  = "result-danger" if final_pred == 1 else "result-success"
-            icon        = "🚨" if final_pred == 1 else "✅"
-            color       = "#ff1e56" if final_pred == 1 else "#00b894"
-            display_verdict = "SUSPICIOUS" if final_pred == 1 else "SAFE"
+            else:
 
-            rules_html = ""
-            if rules_fired:
-                rules_items = "".join(f"<li style='margin-bottom:4px; font-size:0.85rem; opacity:0.85;'>{r}</li>" for r in rules_fired)
-                rules_html = f"<hr style='border:1px solid rgba(128,128,128,0.1); margin: 16px 0;'><div style='font-size:0.8rem; font-weight:600; opacity:0.7; margin-bottom:8px;'>TRIGGERED RULES</div><ul style='margin:0; padding-left:18px; list-style:disc;'>{rules_items}</ul>"
+                result = analyze_transaction(
+                    amount=amount,
+                    txn_count=txn,
+                    hour=hour,
+                    model=model
+                )
 
-            st.markdown(f"""
-                <div class="{card_class}">
-                    <h3 style="margin-top:0; color: {color} !important;">{icon} {display_verdict} — {risk_level} RISK</h3>
-                    <p style="opacity:0.8; margin-bottom: 20px;">{reason}</p>
+                final_pred = 1 if result["is_fraud"] else 0
+                risk_score = result["fraud_score"]
+                reason = result["reason"]
+                confidence = result["ml_proba"] * 100
+                rules_fired = result["triggered_rules"]
 
-                    <div style="display:flex; justify-content:space-between; margin-bottom: 5px;">
-                        <span style="font-size:0.9rem; font-weight:600;">ML Fraud Probability</span>
-                        <span style="font-size:0.9rem; font-weight:600; color:{color};">{confidence:.1f}%</span>
+                card_class = (
+                    "result-danger"
+                    if final_pred == 1
+                    else "result-success"
+                )
+
+                icon = "🚨" if final_pred == 1 else "✅"
+                
+
+                display_verdict = (
+                    "SUSPICIOUS"
+                    if final_pred == 1
+                    else "SAFE"
+                )
+
+                rules_html = ""
+
+                if rules_fired:
+                    rules_items = "".join(
+                        f"<li>{r}</li>"
+                        for r in rules_fired
+                    )
+
+                    rules_html = f"<ul>{rules_items}</ul>"
+
+                st.markdown(
+                    f"""
+                    <div class="{card_class}">
+                        <h3>{icon} {display_verdict}</h3>
+                        <p>{reason}</p>
+                        <p>Confidence: {confidence:.1f}%</p>
+                        <p>Risk Score: {risk_score}</p>
+                        {rules_html}
                     </div>
-                    <div class="progress-bg"><div class="progress-fill" style="width: {min(confidence, 100):.1f}%; background: {color};"></div></div>
-
-                    <hr style="border:1px solid rgba(128,128,128,0.1); margin: 20px 0;">
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Risk Score (Calculated)</div>
-                            <div style="font-size:1.5rem; font-weight:700;">{risk_score}/100</div>
-                        </div>
-                        <div>
-                            <div style="font-size:0.8rem; opacity:0.7;">Recommendation</div>
-                            <div style="font-size:1.1rem; font-weight:600;">{result['recommendation'].replace('_', ' ')}</div>
-                        </div>
-                    </div>
-                    {rules_html}
-                </div>
-            """, unsafe_allow_html=True)
+                    """,
+                    unsafe_allow_html=True
+                )
 
         else:
-            st.markdown("<div style='height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0.5; border: 2px dashed rgba(128,128,128,0.2); border-radius: 16px; padding: 50px; text-align: center;'>Waiting for telemetry input... Enter parameters and click Initialize Inference.</div>", unsafe_allow_html=True)
-
+            st.markdown(
+                """
+                <div style='height:100%;padding:50px;text-align:center;'>
+                Waiting for telemetry input...
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 elif "About" in page:
     st.markdown("<h2>System Architecture & Intelligence</h2>", unsafe_allow_html=True)
